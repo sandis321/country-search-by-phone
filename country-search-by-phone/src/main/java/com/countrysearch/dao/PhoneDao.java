@@ -24,21 +24,19 @@ public class PhoneDao {
 		return phoneCodeMap;
 	}
 
-	public void loadData(Map<String, String> phoneCodeMap) {
-		this.phoneCodeMap = phoneCodeMap;
-	}
-
 	public void initData() {
 		try {
 			JSONObject obj = new JSONObject(
 					new RestTemplate().getForObject(new URL(RESOURCE_URL).toURI(), String.class));
 			obj = obj.getJSONObject("results");
-			JSONArray geodata = obj.getJSONArray("bindings");
-			this.phoneCodeMap = new HashMap<>();
-			geodata.forEach(e -> {
+			JSONArray jsonArray = obj.getJSONArray("bindings");
+			phoneCodeMap = new HashMap<>();
+			jsonArray.forEach(e -> {
 				JSONObject row = (JSONObject) e;
-				phoneCodeMap.put((String) row.getJSONObject("cc").get(VALUE),
-						(String) row.getJSONObject("itemLabel").get(VALUE));
+				String key = (String) row.getJSONObject("cc").get(VALUE);
+				String val = (String) row.getJSONObject("itemLabel").get(VALUE);
+				phoneCodeMap.put(key,
+						!phoneCodeMap.containsKey(key) ? val : phoneCodeMap.get(key).concat(", ".concat(val)));
 			});
 		} catch (Exception e) {
 			log.error("phoneDao data load error", e);
